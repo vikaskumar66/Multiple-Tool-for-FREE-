@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Crop Tool</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    canvas { border: 1px solid #ccc; margin-top: 10px; }
+    #crop-area {
+      position: absolute;
+      border: 2px dashed red;
+      pointer-events: none;
+    }
+    #container {
+      position: relative;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <h2>Image Crop Tool</h2>
+  <input type="file" id="imageLoader" accept="image/*" />
+  <div id="container">
+    <canvas id="imageCanvas"></canvas>
+    <div id="crop-area"></div>
+  </div>
+  <button id="cropBtn">Crop</button>
+  <h3>Cropped Result:</h3>
+  <canvas id="croppedCanvas"></canvas>
+
+  <script>
+    const imageLoader = document.getElementById('imageLoader');
+    const imageCanvas = document.getElementById('imageCanvas');
+    const croppedCanvas = document.getElementById('croppedCanvas');
+    const cropArea = document.getElementById('crop-area');
+    const ctx = imageCanvas.getContext('2d');
+
+    let img = new Image();
+    let startX, startY, endX, endY;
+    let isDragging = false;
+
+    imageLoader.addEventListener('change', handleImage, false);
+    imageCanvas.addEventListener('mousedown', startCrop);
+    imageCanvas.addEventListener('mousemove', drawCropBox);
+    imageCanvas.addEventListener('mouseup', endCrop);
+    document.getElementById('cropBtn').addEventListener('click', cropImage);
+
+    function handleImage(e) {
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        img.onload = function() {
+          imageCanvas.width = img.width;
+          imageCanvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+        }
+        img.src = event.target.result;
+      }
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function startCrop(e) {
+      isDragging = true;
+      const rect = imageCanvas.getBoundingClientRect();
+      startX = e.clientX - rect.left;
+      startY = e.clientY - rect.top;
+    }
+
+    function drawCropBox(e) {
+      if (!isDragging) return;
+      const rect = imageCanvas.getBoundingClientRect();
+      endX = e.clientX - rect.left;
+      endY = e.clientY - rect.top;
+
+      const width = endX - startX;
+      const height = endY - startY;
+
+      cropArea.style.left = `${Math.min(startX, endX)}px`;
+      cropArea.style.top = `${Math.min(startY, endY)}px`;
+      cropArea.style.width = `${Math.abs(width)}px`;
+      cropArea.style.height = `${Math.abs(height)}px`;
+      cropArea.style.display = 'block';
+    }
+
+    function endCrop() {
+      isDragging = false;
+    }
+
+    function cropImage() {
+      const sx = Math.min(startX, endX);
+      const sy = Math.min(startY, endY);
+      const sw = Math.abs(endX - startX);
+      const sh = Math.abs(endY - startY);
+
+      const cropCtx = croppedCanvas.getContext('2d');
+      croppedCanvas.width = sw;
+      croppedCanvas.height = sh;
+      cropCtx.clearRect(0, 0, sw, sh);
+      cropCtx.drawImage(imageCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
+    }
+  </script>
+</body>
+</html>
