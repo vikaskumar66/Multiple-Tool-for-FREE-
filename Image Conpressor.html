@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Compressor</title>
+  <style>
+    body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    input[type="file"] { margin: 20px 0; }
+    img { max-width: 100%; height: auto; margin-top: 20px; }
+    button { margin-top: 20px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+  <h1>Image Compressor</h1>
+  <input type="file" id="upload" accept="image/*" />
+  <br/>
+  <canvas id="canvas" style="display: none;"></canvas>
+  <br/>
+  <img id="preview" alt="Compressed Image Preview" />
+  <br/>
+  <a id="download" href="#" download="compressed-image.jpg" style="display: none;">
+    <button>Download Compressed Image</button>
+  </a>
+
+  <script src="compressor.js"></script>
+</body>
+</html>document.getElementById('upload').addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    const img = new Image();
+    img.onload = function () {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+
+      // Set canvas dimensions to image dimensions
+      canvas.width = img.width;
+      canvas.height = img.height;
+
+      // Draw image onto canvas
+      ctx.drawImage(img, 0, 0);
+
+      // Compress the image
+      const quality = 0.7; // Adjust quality between 0 and 1
+      const compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+
+      // Display compressed image
+      const preview = document.getElementById('preview');
+      preview.src = compressedDataUrl;
+
+      // Set up download link
+      const downloadLink = document.getElementById('download');
+      downloadLink.href = compressedDataUrl;
+      downloadLink.style.display = 'inline-block';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+});
