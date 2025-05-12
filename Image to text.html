@@ -1,0 +1,39 @@
+<div id="ocr-tool" class="tool-container">
+  <h2>Image to Text Converter</h2>
+  <input type="file" id="imageUpload" accept="image/*" />
+  <button onclick="extractText()">Extract Text</button>
+  <div id="ocr-result"></div>
+</div><script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>function extractText() {
+  const image = document.getElementById('imageUpload').files[0];
+  const resultContainer = document.getElementById('ocr-result');
+
+  if (!image) {
+    resultContainer.textContent = 'Please upload an image.';
+    return;
+  }
+
+  resultContainer.innerHTML = 'Processing...';
+
+  Tesseract.recognize(
+    image,
+    'eng',
+    {
+      logger: m => console.log(m)
+    }
+  ).then(({ data: { text } }) => {
+    resultContainer.innerHTML = `<h3>Extracted Text:</h3><pre>${text}</pre>`;
+  }).catch(err => {
+    resultContainer.innerHTML = `Error: ${err.message}`;
+  });
+}#ocr-tool {
+  padding: 20px;
+  max-width: 500px;
+  margin: auto;
+}
+#ocr-result {
+  margin-top: 20px;
+  white-space: pre-wrap;
+  background: #f4f4f4;
+  padding: 10px;
+  border: 1px solid #ddd;
+}<script src="https://cdn.jsdelivr.net/npm/tesseract.js@4.0.2/dist/tesseract.min.js"></script>
