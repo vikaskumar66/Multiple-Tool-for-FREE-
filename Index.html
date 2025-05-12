@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Image Converter Tool</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Image Converter</h1>
+    <input type="file" id="imageInput" accept="image/*" />
+    <div class="preview">
+      <img id="previewImage" src="" alt="Image Preview" />
+    </div>
+    <div class="controls">
+      <label for="formatSelect">Convert to:</label>
+      <select id="formatSelect">
+        <option value="image/jpeg">JPEG</option>
+        <option value="image/png">PNG</option>
+        <option value="image/webp">WebP</option>
+      </select>
+      <button id="convertBtn">Convert & Download</button>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</htmlbody {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.container {
+  max-width: 600px;
+  margin: 2rem auto;
+  padding: 1rem;
+  text-align: center;
+  background-color: #e6f0ff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  color: #007bff;
+}
+
+input[type="file"] {
+  margin: 1rem 0;
+}
+
+.preview img {
+  max-width: 100%;
+  height: auto;
+  margin: 1rem 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.controls label,
+.controls select,
+.controls button {
+  margin: 0.5rem 0;
+}
+
+button {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 600px) {
+  .container {
+    margin: 1rem;
+    padding: 1rem;
+  }
+}document.getElementById('imageInput').addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function (event) {
+    const img = document.getElementById('previewImage');
+    img.src = event.target.result;
+    img.onload = function () {
+      // Image loaded
+    };
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('convertBtn').addEventListener('click', function () {
+  const img = document.getElementById('previewImage');
+  const format = document.getElementById('formatSelect').value;
+
+  if (!img.src) {
+    alert('Please upload an image first.');
+    return;
+  }
+
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+
+  canvas.toBlob(function (blob) {
+    const link = document.createElement('a');
+    link.download = 'converted-image.' + format.split('/')[1];
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  }, format);
+});
