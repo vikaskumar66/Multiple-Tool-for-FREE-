@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF & Word Converter</title>
+</head>
+<body>
+  <h2>Convert PDF to Word / Word to PDF</h2>
+
+  <input type="file" id="fileInput" accept=".pdf,.docx" />
+  <select id="conversionType">
+    <option value="pdfToWord">PDF to Word</option>
+    <option value="wordToPdf">Word to PDF</option>
+  </select>
+  <button onclick="uploadFile()">Convert</button>
+
+  <a id="downloadLink" style="display:none;">Download Converted File</a>
+
+  <script>
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const conversionType = document.getElementById('conversionType').value;
+      const file = fileInput.files[0];
+      if (!file) return alert('Please select a file');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('conversionType', conversionType);
+
+      const response = await fetch('/convert', {
+        method: 'POST',
+        body: formData
+      });
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const downloadLink = document.getElementById('downloadLink');
+      downloadLink.href = url;
+      downloadLink.download = conversionType === 'pdfToWord' ? 'converted.docx' : 'converted.pdf';
+      downloadLink.style.display = 'block';
+      downloadLink.textContent = 'Download Converted File';
+    }
+  </script>
+</body>
+</html>const express = require('express');
+const multer = require('multer');
+const libre = require('libreoffice-convert');
+const fs = require('fs');
+const path = require('path');
+
+const app = express();
+const upload = multer({ dest: 'uploads/' });
+
+app.post('/convert', upload.single('file'), (req, res) => {
+  const filePath = req.file.path;
+  const ext = req.body.conversionType === 'pdfToWord' ? '.docx' : '.pdf';
+
+  const file = fs.readFileSync(filePath);
+  libre.convert(file, ext, undefined, (err, done) => {
+    if (err) {
+      console.log(`Error converting file: ${err}`);
+      return res.status(500).send('Conversion failed');
+    }
+
+    res.setHeader('Content-Disposition', `attachment; filename=converted${ext}`);
+    res.send(done);
+
+    // Cleanup
+    fs.unlinkSync(filePath);
+  });
+});
+
+app.listen(3000, () => {
+  console.log('Server started on http://localhost:3000');
+});
