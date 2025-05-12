@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Converter</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #preview { max-width: 300px; margin-top: 20px; }
+    .btn { margin-top: 10px; padding: 10px 20px; }
+  </style>
+</head>
+<body>
+
+  <h2>Image Converter</h2>
+  <input type="file" id="imageInput" accept="image/*">
+  <br>
+  <select id="formatSelect">
+    <option value="image/png">PNG</option>
+    <option value="image/jpeg">JPEG</option>
+    <option value="image/webp">WebP</option>
+  </select>
+  <br>
+  <button class="btn" onclick="convertImage()">Convert & Download</button>
+  <br>
+  <canvas id="canvas" style="display:none;"></canvas>
+  <img id="preview" src="">
+
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('preview');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let image = new Image();
+
+    imageInput.addEventListener('change', function() {
+      const file = this.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          image.src = e.target.result;
+          preview.src = e.target.result;
+        }
+        reader.readAsDataURL(file);
+      }
+    });
+
+    function convertImage() {
+      const format = document.getElementById('formatSelect').value;
+      canvas.width = image.width;
+      canvas.height = image.height;
+      ctx.drawImage(image, 0, 0);
+      canvas.toBlob(function(blob) {
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `converted.${format.split('/')[1]}`;
+        link.click();
+      }, format);
+    }
+  </script>
+
+</body>
+</html>
