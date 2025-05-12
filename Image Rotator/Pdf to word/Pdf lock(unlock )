@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>PDF Lock/Unlock Tool</title>
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+</head>
+<body>
+  <h1>PDF Lock/Unlock Tool</h1>
+  <input type="file" id="pdfInput" accept="application/pdf">
+  <input type="password" id="password" placeholder="Enter password">
+  <button onclick="lockPDF()">Lock PDF</button>
+  <button onclick="unlockPDF()">Unlock PDF</button>
+
+  <script>
+    let pdfFile;
+
+    document.getElementById("pdfInput").addEventListener("change", function (e) {
+      pdfFile = e.target.files[0];
+    });
+
+    async function lockPDF() {
+      if (!pdfFile) return alert("Please upload a PDF first");
+      const password = document.getElementById("password").value;
+      const buffer = await pdfFile.arrayBuffer();
+      const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+      const pdfBytes = await pdfDoc.save({
+        encrypt: {
+          ownerPassword: password,
+          userPassword: password,
+          permissions: {
+            printing: 'none',
+            modifying: false,
+            copying: false,
+            annotating: false,
+          },
+        }
+      });
+
+      download(pdfBytes, 'locked.pdf');
+    }
+
+    async function unlockPDF() {
+      alert("Unlocking PDFs requires the original password. Browser-side decryption is very limited.");
+      // For real unlocking, you need to decrypt with a server-side tool like QPDF or pdftk.
+    }
+
+    function download(bytes, filename) {
+      const blob = new Blob([bytes], { type: "application/pdf" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = filename;
+      link.click();
+    }
+  </script>
+</body>
+</html>
