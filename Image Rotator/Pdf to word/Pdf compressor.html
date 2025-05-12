@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF Compressor</title>
+</head>
+<body>
+  <h1>PDF Compressor Tool</h1>
+  <input type="file" id="pdf-upload" accept="application/pdf" />
+  <button id="compress-btn">Compress PDF</button>
+  <a id="download-link" style="display:none;">Download Compressed PDF</a>
+
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script>
+    const uploadInput = document.getElementById('pdf-upload');
+    const compressBtn = document.getElementById('compress-btn');
+    const downloadLink = document.getElementById('download-link');
+
+    compressBtn.addEventListener('click', async () => {
+      if (!uploadInput.files.length) {
+        alert('Please upload a PDF file first.');
+        return;
+      }
+
+      const file = uploadInput.files[0];
+      const arrayBuffer = await file.arrayBuffer();
+      const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer);
+
+      const newPdfDoc = await PDFLib.PDFDocument.create();
+      const copiedPages = await new
