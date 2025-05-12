@@ -1,0 +1,23 @@
+<div class="gdt-calculator">
+  <h2>GDT (GDP) Calculator</h2>
+  <label>Consumption (C): <input type="number" id="consumption" /></label><br/>
+  <label>Investment (I): <input type="number" id="investment" /></label><br/>
+  <label>Government Spending (G): <input type="number" id="government" /></label><br/>
+  <label>Exports (X): <input type="number" id="exports" /></label><br/>
+  <label>Imports (M): <input type="number" id="imports" /></label><br/>
+  <button onclick="calculateGDT()">Calculate GDP</button>
+  <h3 id="gdt-result">Result: </h3>
+</div>
+
+<script>
+  function calculateGDT() {
+    const C = parseFloat(document.getElementById("consumption").value) || 0;
+    const I = parseFloat(document.getElementById("investment").value) || 0;
+    const G = parseFloat(document.getElementById("government").value) || 0;
+    const X = parseFloat(document.getElementById("exports").value) || 0;
+    const M = parseFloat(document.getElementById("imports").value) || 0;
+
+    const GDP = C + I + G + (X - M);
+    document.getElementById("gdt-result").innerText = `Result: GDP = ${GDP.toFixed(2)}`;
+  }
+</script>
