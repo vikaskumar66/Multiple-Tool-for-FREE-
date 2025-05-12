@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Document Converter</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #output { white-space: pre-wrap; background: #f3f3f3; padding: 10px; margin-top: 20px; border-radius: 5px; }
+  </style>
+</head>
+<body>
+  <h1>Document Converter</h1>
+  <input type="file" id="fileInput" accept=".txt,.pdf,.docx" />
+  <button onclick="convert()">Convert to Text</button>
+  <div id="output"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.4.2/mammoth.browser.min.js"></script>
+
+  <script>
+    function convert() {
+      const fileInput = document.getElementById('fileInput');
+      const output = document.getElementById('output');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        output.textContent = 'Please upload a file.';
+        return;
+      }
+
+      const reader = new FileReader();
+
+      if (file.type === "text/plain") {
+        reader.onload = () => output.textContent = reader.result;
+        reader.readAsText(file);
+      } else if (file.type === "application/pdf") {
+        reader.onload = async () => {
+          const typedArray = new Uint8Array(reader.result);
+          const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+          let text = '';
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(item => item.str).join(' ') + '\n\n';
+          }
+          output.textContent = text;
+        };
+        reader.readAsArrayBuffer(file);
+      } else if (file.name.endsWith('.docx')) {
+        reader.onload = async () => {
+          const result = await mammoth.extractRawText({ arrayBuffer: reader.result });
+          output.textContent = result.value;
+        };
+        reader.readAsArrayBuffer(file);
+      } else {
+        output.textContent = 'Unsupported file type.';
+      }
+    }
+  </script>
+</body>
+</html>
